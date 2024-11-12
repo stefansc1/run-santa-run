@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Run, Santa, Run!</title>
+</head>
+<body>
+
+  <script>
+    const ws = new WebSocket('ws://' + window.location.host + '/ws/santa/');
+    ws.onclose = e => {console.log("Error: socket closed unexpectedly", e);};
+    ws.onmessage = m => {
+      console.log(m);
+    };
+  </script>
+</body>
+</html>

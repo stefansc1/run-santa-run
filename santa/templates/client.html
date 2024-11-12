@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Run, Santa, Run!</title>
+</head>
+<body>
+  <div style="min-height:95vh; height:95vh; max-height:95vh;">
+    <button id="btn" style="width:100%; height:100%;">
+      Jump!
+    </button>
+  </div>
+
+  <script>
+    const ws = new WebSocket('ws://' + window.location.host + '/ws/');
+    const btn = document.getElementById('btn');
+    btn.onmousedown = e => {ws.send('{"action": "jump"}'); e.preventDefault();};
+    btn.onmouseup = e => {ws.send('{"action": ""}'); e.preventDefault();};
+    // mobile: no mouse, but touch events
+    btn.ontouchstart = e => {ws.send('{"action": "jump"}'); e.preventDefault();};
+    btn.ontouchend = e => {ws.send('{"action": ""}'); e.preventDefault();};
+    // mobile: long click opens context menu
+    btn.oncontextmenu = e => {
+      event.preventDefault();
+      event.stopPropagation();
+      return false;
+    };
+
+    ws.onclose = e => {console.log("Error: socket closed unexpectedly", e);};
+  </script>
+</body>
+</html>

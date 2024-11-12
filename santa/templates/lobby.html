@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Run, Santa, Run!</title>
+
+  <script type="text/javascript" src="{% static '3rdparty/qrcode/qrcode.min.js' %}"></script>
+
+  <style>
+    @keyframes jump {
+      0% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+      100% { transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div style="display:flex; justify-content:space-between">
+    <span>{{ ip }}:{{ port }}</span>
+    <a style="z-index:100"; href={% url 'run' %}>Run!</a>
+    <div>
+      <span id="num_jumping">0</span> / <span id="num_players">0</span> players are jumping
+    </div>
+  </div>
+
+  <div id="qrcode" style="width:200px; height:200px; margin-top:15px;"></div>
+
+  <div style="display:flex; justify-content:center; align-items:center; text-align:center; min-height:95vh; position:absolute; top:0; min-width:100vh;">
+    <div id="santa" style="background:red; width:25px; height:25px;"></div>
+  </div>
+
+  <script>
+    var is_jumping = false;
+    const ws = new WebSocket('ws://' + window.location.host + '/ws/santa/');
+    ws.onclose = e => {console.log("Error: socket closed unexpectedly", e);};
+    ws.onmessage = m => {
+      //console.log(m);
+      let data = JSON.parse(m.data)
+      let jumping = data["jumping"];
+      let players = data["players"];
+      document.getElementById("num_jumping").textContent = jumping + "";
+      document.getElementById("num_players").textContent = players + "";
+      let should_jump = jumping >= players/2;
+      if (should_jump && !is_jumping) {
+        document.getElementById("santa").animate([
+          { transform: "translateY(0)" },
+          { transform: "translateY(-16px)" },
+          { transform: "translateY(0)" },
+        ], {
+          duration: 256,
+          iterations: 1,
+        });
+      }
+      is_jumping = should_jump;
+    };
+
+    // generate QR code
+    new QRCode(document.getElementById("qrcode"), {
+      text: "http://{{ ip }}:{{ port }}",
+      width : 200,
+      height : 200,
+    });
+  </script>
+</body>
+</html>
