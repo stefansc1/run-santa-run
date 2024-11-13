@@ -12,7 +12,7 @@ ENV PYTHONDONTWRITEBYTECODE 1
 
 
 # Install poetry separated from system interpreter
-RUN python3 pip install -r requirements.txt
+RUN pip install -r requirements.txt
 
 WORKDIR /app
 # Install dependencies
