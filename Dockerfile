@@ -11,12 +11,14 @@ ENV PIP_DISABLE_PIP_VERSION_CHECK 1
 ENV PYTHONDONTWRITEBYTECODE 1
 
 
-# Install poetry separated from system interpreter
-RUN pip install -r requirements.txt
 
 WORKDIR /app
 # Install dependencies
 # Since ebustoolbox and mapengine are installed as well, copy whole directory first
 COPY . /app
+
+# Install poetry separated from system interpreter
+RUN pip install -r requirements.txt
+
 #startup_command=poetry run python -c 'print(\"Started\")' && poetry run python manage.py makemigrations && poetry run python manage.py migrate && poetry run python manage.py runserver 0.0.0.0:8000
 CMD python3 manage.py runserver
