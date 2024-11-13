@@ -2,4 +2,3 @@ django
 # channels
 channels-redis
 channels[daphne]
-environ
