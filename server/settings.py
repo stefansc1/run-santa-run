@@ -24,7 +24,7 @@ SECRET_KEY = 'django-insecure-z&j#+^uxc#(cwotgl*h7k46c$lhm46m=*gidjvm3+=39&_e(+m
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = =["localhost", "127.0.0.1", "*"]
+ALLOWED_HOSTS  =["localhost", "127.0.0.1", "*"]
 PORT = 8000
 CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1"]
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
