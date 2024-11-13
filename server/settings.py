@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/4.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
-
+import environ
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -70,7 +70,8 @@ TEMPLATES = [
         },
     },
 ]
-
+REDIS_IP= env.str("REDIS_IP", "127.0.0.1")
+REDIS_PORT = = env.int("REDIS_PORT", 6379)
 WSGI_APPLICATION = 'server.wsgi.application'
 ASGI_APPLICATION = 'server.routing.application'
 # ASGI_APPLICATION = 'server.asgi.application'
@@ -79,7 +80,7 @@ CHANNEL_LAYERS = {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         # "BACKEND": "channels.layers.InMemoryChannelLayer",
         "CONFIG": {
-            "hosts": [("127.0.0.1", 6379)],
+            "hosts": [(REDIS_IP, REDIS_PORT)],
             # "ssl_context": ... (optional)
         },
     },
