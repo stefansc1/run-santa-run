@@ -21,4 +21,4 @@ COPY . /app
 RUN pip install -r requirements.txt
 
 #startup_command=poetry run python -c 'print(\"Started\")' && poetry run python manage.py makemigrations && poetry run python manage.py migrate && poetry run python manage.py runserver 0.0.0.0:8000
-CMD python3 manage.py runserver
+CMD python3 manage.py makemigrations && python3 manage.py migrate && python3 manage.py runserver 0.0.0.0:8000
