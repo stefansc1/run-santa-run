@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/4.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
+
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -24,11 +25,9 @@ SECRET_KEY = 'django-insecure-z&j#+^uxc#(cwotgl*h7k46c$lhm46m=*gidjvm3+=39&_e(+m
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS  =["localhost", "127.0.0.1", "*"]
+ALLOWED_HOSTS = ['*']
 PORT = 8000
-CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1"]
-SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-DJANGO_SECURE_SSL_REDIRECT =True
+
 
 # Application definition
 
