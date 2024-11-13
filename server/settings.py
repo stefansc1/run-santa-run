@@ -70,8 +70,7 @@ TEMPLATES = [
         },
     },
 ]
-REDIS_IP= env.str("REDIS_IP", "127.0.0.1")
-REDIS_PORT = = env.int("REDIS_PORT", 6379)
+
 WSGI_APPLICATION = 'server.wsgi.application'
 ASGI_APPLICATION = 'server.routing.application'
 # ASGI_APPLICATION = 'server.asgi.application'
@@ -80,7 +79,7 @@ CHANNEL_LAYERS = {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         # "BACKEND": "channels.layers.InMemoryChannelLayer",
         "CONFIG": {
-            "hosts": [(REDIS_IP, REDIS_PORT)],
+            "hosts": [("127.0.0.1", 6379)],
             # "ssl_context": ... (optional)
         },
     },
