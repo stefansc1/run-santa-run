@@ -11,9 +11,18 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
 from pathlib import Path
-
+import environ
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+# Root dir is a parent directory
+ROOT_DIR = environ.Path(__file__) - 2
+
+# Read environment variables
+env = environ.Env()
+
+# Read .env file
+# OS environment variables take precedence over variables from .env file
+env.read_env(str(ROOT_DIR.path(".env")))
 
 
 # Quick-start development settings - unsuitable for production
@@ -74,12 +83,14 @@ TEMPLATES = [
 WSGI_APPLICATION = 'server.wsgi.application'
 ASGI_APPLICATION = 'server.routing.application'
 # ASGI_APPLICATION = 'server.asgi.application'
+REDIS_IP = env.str('REDIS_IP', "127.0.0.1")
+REDIS_PORT = env.str('REDIS_PORT', 6379 )
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         # "BACKEND": "channels.layers.InMemoryChannelLayer",
         "CONFIG": {
-            "hosts": [("127.0.0.1", 6379)],
+            "hosts": [("0.0.0.0", 6379)],
             # "ssl_context": ... (optional)
         },
     },
