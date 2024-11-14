@@ -10,6 +10,7 @@ def connect(request):
     return render(request, "client.html")
 
 def lobby(request):
+    print(settings.REDIS_IP)
     # get own IP
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.settimeout(0)
