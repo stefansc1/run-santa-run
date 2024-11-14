@@ -84,13 +84,16 @@ WSGI_APPLICATION = 'server.wsgi.application'
 ASGI_APPLICATION = 'server.routing.application'
 # ASGI_APPLICATION = 'server.asgi.application'
 REDIS_IP = env.str('REDIS_IP', "127.0.0.1")
-REDIS_PORT = env.str('REDIS_PORT', 6379 )
+REDIS_PORT = env.int('REDIS_PORT', 6379 )
+REDIS_PASS = env.str('REDIS_PASS', "MyRedisPass123" )
+
+redis_host=f"redis://:{REDIS_PASS}@{REDIS_IP}:{REDIS_PORT}/0"
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         # "BACKEND": "channels.layers.InMemoryChannelLayer",
         "CONFIG": {
-            "hosts": [(REDIS_IP, REDIS_PORT)],
+            "hosts": [redis_host],
             # "ssl_context": ... (optional)
         },
     },
