@@ -87,13 +87,13 @@ REDIS_IP = env.str('REDIS_IP', "127.0.0.1")
 REDIS_PORT = env.int('REDIS_PORT', 6379 )
 REDIS_PASS = env.str('REDIS_PASS', "MyRedisPass123" )
 
-redis_host=f"redis://:{REDIS_PASS}@{REDIS_IP}:{REDIS_PORT}/0"
+REDIS_HOST=f"redis://:{REDIS_PASS}@{REDIS_IP}:{REDIS_PORT}/0"
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         # "BACKEND": "channels.layers.InMemoryChannelLayer",
         "CONFIG": {
-            "hosts": [redis_host],
+            "hosts": [(REDIS_HOST)],
             # "ssl_context": ... (optional)
         },
     },
