@@ -12,7 +12,8 @@
   </div>
 
   <script>
-    const ws = new WebSocket('ws://' + window.location.host + '/ws/');
+      const ws_scheme = (window.location.protocol == 'https:') ? 'wss' : 'ws';
+      const ws = new WebSocket(ws_scheme+'://' + window.location.host + '/ws/');
     const btn = document.getElementById('btn');
     btn.onmousedown = e => {ws.send('{"action": "jump"}'); e.preventDefault();};
     btn.onmouseup = e => {ws.send('{"action": ""}'); e.preventDefault();};

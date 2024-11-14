@@ -6,9 +6,12 @@
 </head>
 <body>
 
-  <script>
-    const ws = new WebSocket('ws://' + window.location.host + '/ws/santa/');
-    ws.onclose = e => {console.log("Error: socket closed unexpectedly", e);};
+<script>
+    const ws_scheme = (window.location.protocol == 'https:') ? 'wss' : 'ws';
+    const ws = new WebSocket(ws_scheme + '://' + window.location.host + '/ws/santa/');
+    ws.onclose = e => {
+        console.log("Error: socket closed unexpectedly", e);
+    };
     ws.onmessage = m => {
       console.log(m);
     };
