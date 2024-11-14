@@ -5,7 +5,7 @@ THIS IS NOT MEANT FOR PRODUCTIVE USE, ONLY LOCAL DEMONSTRATION.
 
 ## Install
 A working redis installation is required.
-No database, creates a local sqlite file.
+Needs no database, creates a local sqlite file.
 ```
 pip install -r requirements.txt
 python manage.py migrate

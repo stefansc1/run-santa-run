@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
+import os
 from pathlib import Path
 import environ
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -35,8 +36,8 @@ SECRET_KEY = 'django-insecure-z&j#+^uxc#(cwotgl*h7k46c$lhm46m=*gidjvm3+=39&_e(+m
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
-PORT = 8000
-
+IP = os.environ.get("IP")  # https://santa-run-django.apps.rl-institut.de
+PORT = int(os.environ.get("PORT", 8000))
 
 # Application definition
 
@@ -85,9 +86,12 @@ ASGI_APPLICATION = 'server.routing.application'
 # ASGI_APPLICATION = 'server.asgi.application'
 REDIS_IP = env.str('REDIS_IP', "127.0.0.1")
 REDIS_PORT = env.int('REDIS_PORT', 6379 )
-REDIS_PASS = env.str('REDIS_PASS', "MyRedisPass123" )
+REDIS_PASS = env.str('REDIS_PASS', None)
 
-REDIS_HOST=f"redis://:{REDIS_PASS}@{REDIS_IP}:{REDIS_PORT}/0"
+if REDIS_PASS is None:
+    REDIS_HOST=f"redis://{REDIS_IP}:{REDIS_PORT}/0"
+else:
+    REDIS_HOST=f"redis://:{REDIS_PASS}@{REDIS_IP}:{REDIS_PORT}/0"
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",

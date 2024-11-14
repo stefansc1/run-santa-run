@@ -10,14 +10,16 @@ def connect(request):
     return render(request, "client.html")
 
 def lobby(request):
-    print(settings.REDIS_IP)
-    # get own IP
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.settimeout(0)
-    # doesn't even have to be reachable
-    s.connect(('213.61.198.13', 1))  # RLI
-    ip = s.getsockname()[0]
-    s.close()
+    if not settings.IP:
+        # get own IP
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.settimeout(0)
+        # doesn't even have to be reachable
+        s.connect(('213.61.198.13', 1))  # RLI
+        ip = s.getsockname()[0]
+        s.close()
+    else:
+        ip = settings.IP
     return render(request, 'lobby.html', {'ip': ip, 'port': settings.PORT})
 
 def run(request):

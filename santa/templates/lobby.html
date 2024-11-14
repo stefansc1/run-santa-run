@@ -17,8 +17,11 @@
 </head>
 <body>
   <div style="display:flex; justify-content:space-between">
-    <span>{{ ip }}:{{ port }}</span>
-    <a style="z-index:100"; href={% url 'run' %}>Run!</a>
+    <div>
+      <span id="addr-span"></span>
+      <button onclick="generateQR(window.location.origin);">🔀</button>
+    </div>
+    <a href={% url 'run' %}>Run!</a>
     <div>
       <span id="num_jumping">0</span> / <span id="num_players">0</span> players are jumping
     </div>
@@ -26,7 +29,7 @@
 
   <div id="qrcode" style="width:200px; height:200px; margin-top:15px;"></div>
 
-  <div style="display:flex; justify-content:center; align-items:center; text-align:center; min-height:95vh; position:absolute; top:0; min-width:100vh;">
+  <div style="display:flex; justify-content:center; align-items:center; text-align:center; min-height:95vh; position:absolute; top:0; min-width:100vh; z-index:-10;">
     <div id="santa" style="background:red; width:25px; height:25px;"></div>
   </div>
 
@@ -56,12 +59,23 @@
       is_jumping = should_jump;
     };
 
-    // generate QR code
-    new QRCode(document.getElementById("qrcode"), {
-      text: "http://{{ ip }}:{{ port }}",
-      width : 200,
-      height : 200,
-    });
+    var qrcode = null;
+    function generateQR(addr) {
+      if (qrcode)
+        qrcode.makeCode(addr);
+      else
+        qrcode = new QRCode(document.getElementById("qrcode"), {
+          text: addr,
+          width : 200,
+          height : 200,
+        });
+      document.getElementById("addr-span").textContent = addr;
+    }
+
+    let addr = "{{ ip }}:{{ port }}";
+    if (!addr.startsWith("http"))
+      addr = "http://" + addr;
+    generateQR(addr);
   </script>
 </body>
 </html>

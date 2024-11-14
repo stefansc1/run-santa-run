@@ -15,17 +15,29 @@
       const ws_scheme = (window.location.protocol == 'https:') ? 'wss' : 'ws';
       const ws = new WebSocket(ws_scheme+'://' + window.location.host + '/ws/');
     const btn = document.getElementById('btn');
-    btn.onmousedown = e => {ws.send('{"action": "jump"}'); e.preventDefault();};
-    btn.onmouseup = e => {ws.send('{"action": ""}'); e.preventDefault();};
+    btn.onmousedown = down;
+    btn.onmouseup = up;
     // mobile: no mouse, but touch events
-    btn.ontouchstart = e => {ws.send('{"action": "jump"}'); e.preventDefault();};
-    btn.ontouchend = e => {ws.send('{"action": ""}'); e.preventDefault();};
+    btn.ontouchstart = down;
+    btn.ontouchend = up;
     // mobile: long click opens context menu
     btn.oncontextmenu = e => {
       event.preventDefault();
       event.stopPropagation();
       return false;
     };
+
+    function down(e) {
+      ws.send('{"action": "jump"}');
+      e.preventDefault();
+      e.target.style.backgroundColor = 'darkblue';
+    }
+
+    function up(e) {
+      ws.send('{"action": ""}');
+      e.preventDefault();
+      e.target.style.backgroundColor = '';
+    }
 
     ws.onclose = e => {console.log("Error: socket closed unexpectedly", e);};
   </script>
