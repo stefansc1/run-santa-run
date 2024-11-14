@@ -90,7 +90,7 @@ CHANNEL_LAYERS = {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         # "BACKEND": "channels.layers.InMemoryChannelLayer",
         "CONFIG": {
-            "hosts": [("0.0.0.0", 6379)],
+            "hosts": [(REDIS_IP, REDIS_PORT)],
             # "ssl_context": ... (optional)
         },
     },
