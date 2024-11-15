@@ -33,7 +33,7 @@ env.read_env(str(ROOT_DIR.path(".env")))
 SECRET_KEY = 'django-insecure-z&j#+^uxc#(cwotgl*h7k46c$lhm46m=*gidjvm3+=39&_e(+m'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env.bool("DEBUG", default=True)
 
 ALLOWED_HOSTS = ['*']
 IP = os.environ.get("IP")  # https://santa-run-django.apps.rl-institut.de
