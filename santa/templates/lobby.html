@@ -29,9 +29,25 @@
 
   <div id="qrcode" style="width:200px; height:200px; margin-top:15px;"></div>
 
-  <div style="display:flex; justify-content:center; align-items:center; text-align:center; min-height:95vh; position:absolute; top:0; min-width:100vh; z-index:-10;">
+  
+  
+  <div style="display:flex; justify-content:center; align-items:center; text-align:center; min-height:10vh; min-width:10vh;">
     <div id="santa" style="background:red; width:25px; height:25px;"></div>
   </div>
+  
+  
+  <div>
+    
+    
+    
+  </div>
+  <div></div>
+  <div></div>
+  
+  
+  
+  
+  
   <label for="avatar">Choose level as svg File:</label>
     <input name="levelInput" type="file" id="fileInput" accept=".svg">
   
@@ -144,15 +160,19 @@
       let data = JSON.parse(m.data)
       let jumping = data["jumping"];
       let players = data["players"];
-      document.getElementById("num_jumping").textContent = jumping + "";
-      document.getElementById("num_players").textContent = players + "";
-      let should_jump = jumping >= players/2;
-      if (should_jump && !is_jumping) {
-          gamestate.player.shouldJump();
-        document.getElementById("santa").animate([
-          { transform: "translateY(0)" },
-          { transform: "translateY(-16px)" },
-          { transform: "translateY(0)" },
+        document.getElementById("num_jumping").textContent = jumping + "";
+        document.getElementById("num_players").textContent = players + "";
+        let should_jump = jumping >= players / 2;
+        if (should_jump) {
+            jump()
+        } else {
+            notJump()
+        }
+        if (should_jump && !is_jumping) {
+            document.getElementById("santa").animate([
+                {transform: "translateY(0)"},
+                {transform: "translateY(-16px)"},
+                {transform: "translateY(0)"},
         ], {
           duration: 256,
           iterations: 1,
