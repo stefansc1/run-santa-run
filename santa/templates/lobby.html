@@ -32,7 +32,108 @@
   <div style="display:flex; justify-content:center; align-items:center; text-align:center; min-height:95vh; position:absolute; top:0; min-width:100vh; z-index:-10;">
     <div id="santa" style="background:red; width:25px; height:25px;"></div>
   </div>
+  <label for="avatar">Choose level as svg File:</label>
+    <input name="levelInput" type="file" id="fileInput" accept=".svg">
+  
+    <canvas id="canvas"></canvas>
+    <button
+      id="jumpButton"
+      onmousedown="jump()"
+      onmouseup="notJump()"
+      onmouseout="notJump()"
+    >
+      Jump
+    </button>
+    <button id="startButton" onclick="start()">Start</button>
 
+    <input id="musicFile" type="file" accept="audio/*" />
+    <input id="countdownFile" type="file" accept="audio/*" />
+    <p>audio</p>
+
+    <audio id="music" src="test.mp3"></audio>
+    <audio id="countdown" src="test.mp3"></audio>
+    <button
+      id="audioButton"
+      data-playing="false"
+      role="switch"
+      aria-checked="false"
+    >
+      <span>Play/Pause</span>
+    </button>
+
+    <script src={% static "js/audio.js"%}></script>
+    <script src={% static "js/level_reader.js"%}></script>
+    <script src={% static "js/app.js"%}></script>
+
+    <script>
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    const windowInnerWidth = window.innerWidth;
+    const windowInnerHeight = window.innerHeight;
+
+    ctx.canvas.width = width;
+    ctx.canvas.height = height;
+
+    gamestate = new Gamestate();
+    let lastRenderTime = 0;
+    ctx.fillStyle = "beige";
+    gamestate.ctx = ctx;
+    let images = [];
+    for (let i = 1; i < 4; i++) {
+        const img = new Image(); // Create new img element
+        let static_path = "{%  static "images/"%}"
+        img.src = static_path + "img" + i + ".png"; // Set source path
+        images.push(img);
+    }
+
+    const bgImage = new Image()
+    bgImage.src = "{%  static "images/bg.png"%}";
+
+    function generatelevel(gamestate) {
+      let b = new Player(100, 200, 50, 80);
+      b.images = images;
+      gamestate.drawables = [];
+      gamestate.addDrawable(b);
+      gamestate.background = bgImage;
+      if (svgDoc == null) {
+        gamestate.addDrawable(new Box(105, 150, 5,150));
+        gamestate.addDrawable(new Box(350, 400, 30, 100));
+        gamestate.addDrawable(new Box(900, 400, 30, 100));
+        gamestate.addDrawable(new Box(0, 450, 360, 20));
+        return;
+        }
+      let boxes = generateXmlLevel(svgDoc);
+      let offset = 8950;
+      for (const box of boxes) {
+        gamestate.addDrawable(new Box(box.x-offset, box.y, box.width, box.height));
+      }
+    }
+
+    generatelevel(gamestate);
+
+    function main(currentTime) {
+      gamestate.set_dt((currentTime - lastRenderTime) / 1000);
+      lastRenderTime = currentTime;
+      gamestate.currentMode();
+      window.requestAnimationFrame(main);
+    }
+
+    function jump() {
+      gamestate.player.shouldJump = true;
+    }
+
+    function notJump() {
+      gamestate.player.shouldJump = false;
+    }
+
+    function start() {
+      gamestate.switchMode("play");
+    }
+    window.requestAnimationFrame(main);
+    </script>
+  
+  
+  
   <script>
     var is_jumping = false;
     const ws_scheme = (window.location.protocol == 'https:') ? 'wss' : 'ws';
@@ -47,6 +148,7 @@
       document.getElementById("num_players").textContent = players + "";
       let should_jump = jumping >= players/2;
       if (should_jump && !is_jumping) {
+          gamestate.player.shouldJump();
         document.getElementById("santa").animate([
           { transform: "translateY(0)" },
           { transform: "translateY(-16px)" },
