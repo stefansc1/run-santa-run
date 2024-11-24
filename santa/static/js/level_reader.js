@@ -1,4 +1,15 @@
 var svgDoc;
+fetch('/level1/')
+  .then(response => response.text()) // Convert the response to text
+  .then(xmlString => {
+    // Parse XML string into a DOM Document
+    const parser = new DOMParser();
+    svgDoc = parser.parseFromString(xmlString, "application/xml");
+    console.log(svgDoc); // Use the XML data
+  })
+  .catch(error => console.error('Error fetching XML:', error));
+
+
 document.getElementById("fileInput").addEventListener("change", function(event) {
   const file = event.target.files[0];
   if (file && file.type === "image/svg+xml") {

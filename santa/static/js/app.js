@@ -1,12 +1,12 @@
 // Dont allow double jump DONE
-// GameOver
-// Score Top Right
-// Some Level Design
+// GameOver Done
+// Score Top left Done
+// Some Level Design Done
 // Player stationary DONE
 // Increasing speed
 // Start Screen
 // music
-// DeltaTime
+// DeltaTime DOne
 
 // px per second per second
 const width = 1800;
@@ -17,10 +17,11 @@ const jumptime = 1.2; // second
 const PLAYER_SPEED = 150;
 const grav = jumpheight * 8 / jumptime / jumptime;
 const jump_speed = grav * jumptime / 2;
-const speed_up = 1/60; //per second
+const speed_up = 1 / 60; //per second
 const playerSpeedUp = speed_up * PLAYER_SPEED;
 const startEvent = new Event("StartGame");
-const deathEvent = new Event("GameOver");
+const gameOverEvent = new Event("GameOver");
+const deathEvent = new Event("Death");
 class Gamestate {
   constructor() {
     this.drawables = new Array();
@@ -28,14 +29,18 @@ class Gamestate {
     this.currentMode = this.play;
     this.mode = "play";
     this.ctx = ctx;
+    this.x_pos = 0;
     this.shouldJump = false;
     this.playTime = 0;
     this.dt = 1;
     this.debug = true;
     this.background = null;
-    this.background_x=0;
-    this.playerSpeedUp =0;
+    this.background_x = 0;
+    this.playerSpeedUp = 0;
+    this.checkPoints = [];
+    this.checkPoint = null;
   }
+
   addDrawable(drawable) {
     if (drawable instanceof Player) {
       console.log("player added");
@@ -52,7 +57,7 @@ class Gamestate {
   drawCountdown() {
     this.draw(this.ctx);
     this.playTime += this.dt;
-    drawClock(this.ctx, -this.playTime);
+    drawText("Start in " + (this.playTime * -1).toFixed(0) + " s", this.ctx, 500, 200);
     if (this.playTime >= 0) {
       this.switchMode("play4real");
     }
@@ -69,32 +74,44 @@ class Gamestate {
   switchMode(mode) {
     switch (mode) {
       case "startscreen":
-        this.player.reset_state();
+        this.player.x_pos = 0;
+        this.player.y_pos = 0;
+        this.player.x_speed = 150;
+        this.player.y_speed = 0;
         this.currentMode = this.play;
         this.drawables = generate_startscreen_level();
-        this.drawClock = (_, __) => void 0;
+        this.drawText = (_, __) => void 0;
         this.drawables.push;
         this.playerSpeedUp = 0;
         break;
       case "play":
         generatelevel(this);
+        this.restoreFromCheckpoint();
         this.draw(this.ctx);
-        this.playTime = -1;
+        this.playTime = -3;
         window.dispatchEvent(startEvent);
         this.currentMode = () => this.drawCountdown();
         break;
       case "play4real":
         generatelevel(this);
-        this.playTime = 0;
-        this.drawClock = drawClock;
-        this.player.reset_state();
-        this.playerSpeedUp = playerSpeedUp;
         this.player.x_speed = PLAYER_SPEED;
+        if (this.checkPoint != null) {
+            this.restoreFromCheckpoint();
+        }
+
+        console.log(this.checkPoints);
+        let e = new CustomEvent("StartMove", { detail: this.playTime });
+        window.dispatchEvent(e);
+        this.playerSpeedUp = playerSpeedUp;
+        this.drawText = drawText;
         this.currentMode = this.play;
         break;
       case "gameover":
-        window.dispatchEvent(deathEvent);
+        window.dispatchEvent(gameOverEvent);
+		this.player.lifes = 3;
+		this.checkPoint = null;
         this.currentMode = this.gameover;
+		this.x_pos = 0;
         this.background_x = 0;
         break;
       default:
@@ -102,56 +119,89 @@ class Gamestate {
         this.mode = mode;
     }
   }
-  drawClock(_, __) {
+  drawText(_, __) {
   }
-
+  createCheckpoint() {
+    console.log("Creating checkpoint" + this.x_pos)
+    let check = new Checkpoint(this)
+    return check;
+  }
+  restoreFromCheckpoint() {
+    if (this.checkPoint == null) {
+      return
+    }
+    this.x_pos = this.checkPoint.x_pos;
+    this.player.y_pos = this.checkPoint.y_pos;
+    this.playTime = this.checkPoint.playTime;
+    this.background_x = this.checkPoint.background_x;
+    this.player.y_speed = this.checkPoint.y_speed;
+    this.player.x_speed = this.checkPoint.x_speed;
+    this.checkPoints = this.checkPoint.checkPoints;
+    this.drawables = deepcopyDrawables(this.checkPoint.drawables);
+  }
   move() {
-    this.background_x -= this.player.x_speed*this.dt/10;
+    this.background_x -= this.player.x_speed * this.dt / 10;
+    let outside = []
+    let i = 0;
+    this.x_pos = this.x_pos + PLAYER_SPEED * this.dt;
     for (const drawable of this.drawables) {
       drawable.x_pos -= this.player.x_speed * this.dt;
-      if (drawable.x_pos<-20000){
-console.log(drawable.x_pos);
+      if (drawable.x_pos + drawable.width < -100) {
+        outside.push(i)
       }
+      i++;
+    }
+    for (const i of outside.reverse()) {
+      this.drawables.splice(i, 1);
     }
     let d_y = this.player.y_speed * this.dt;
     this.player.y_pos += d_y;
     //  this.player.y_pos = this.player.y_pos % this.height;
     if (this.player.y_pos > this.ctx.canvas.height) {
+	  if (this.player.lifes>1){
+		  this.player.lifes -=1;
+		  this.switchMode("play");
+		  window.dispatchEvent(deathEvent);
+		  return
+	  }
       this.switchMode("gameover");
     }
   }
-  scaleBySpeedUp(speedUp){
-    if (this.player.x_speed<1){
-      console.log("low player speed");
-    }
-    if (this.player.x_speed >1){
+  scaleBySpeedUp(speedUp) {
+    if (this.player.x_speed > 1) {
 
-      let newPlayerSpeed =  this.player.x_speed + speedUp*PLAYER_SPEED;
+      let newPlayerSpeed = this.player.x_speed + speedUp * PLAYER_SPEED;
 
       for (const drawable of this.drawables) {
-        let scale = (drawable.x_pos-this.player.x_pos)/this.player.x_speed;
-        let new_x = this.player.x_pos+newPlayerSpeed*scale;
-        scale = (drawable.width+drawable.x_pos-this.player.x_pos)/this.player.x_speed;
-        let new_width = this.player.x_pos-new_x +scale*newPlayerSpeed
-        drawable.x_pos=new_x ;
+        let scale = (drawable.x_pos - this.player.x_pos) / this.player.x_speed;
+        let new_x = this.player.x_pos + newPlayerSpeed * scale;
+        scale = (drawable.width + drawable.x_pos - this.player.x_pos) / this.player.x_speed;
+        let new_width = this.player.x_pos - new_x + scale * newPlayerSpeed
+        drawable.x_pos = new_x;
         drawable.width = new_width;
       }
       this.player.x_speed = newPlayerSpeed;
     }
   }
-
+  addCheckpoint(i) {
+    this.checkPoints.push(i);
+    this.checkPoints = this.checkPoints.sort();
+    this.drawables.push(new Text("Checkpoint", i, 100, 50))
+  }
   play() {
     //  const secondsSinceLastRender = (currentTime - lastRenderTime) / 1000;
     this.playTime += this.dt;
-    let currentSpeedUp = this.playerSpeedUp/PLAYER_SPEED*this.dt;
+    let currentSpeedUp = this.playerSpeedUp / PLAYER_SPEED * this.dt;
     this.scaleBySpeedUp(currentSpeedUp);
     this.draw(this.ctx);
-    this.drawClock(this.ctx, this.playTime);
-    var speedUpEvent = new CustomEvent("SpeedUp", {detail: currentSpeedUp});
-    window.dispatchEvent(speedUpEvent);
-    // Update speeds of player without moving
+    this.drawText("Score: " + (this.playTime * 10).toFixed(0), this.ctx, 50, 50);
+    this.drawText("❤:" + (this.player.lifes).toFixed(0), this.ctx, 50, 100);
     this.player.update(this.dt, this.playerSpeedUp);
     this.move();
+    if (this.checkPoints.length != 0 && this.x_pos > this.checkPoints[0]) {
+      this.checkPoint = this.createCheckpoint();
+      this.checkPoints.splice(0, 1);
+    }
     this.player.canJump = false;
     // If player collides he can jump again
     this.checkCollision();
@@ -165,19 +215,20 @@ console.log(drawable.x_pos);
   }
 
   gameover() {
+    let score = (this.playTime * 10).toFixed(0);
     this.draw(this.ctx);
     this.ctx.color = "beige";
-    // 	this.ctx.fillRect(0, 0, ctx.canvas.width,ctx.canvas.height);
     this.ctx.font = "48px serif";
     this.ctx.fillStyle = "black";
-    //    this.ctx.strokeText("Game Over Press the button to start a new game", 50,50);
     this.ctx.fillText("Game Over Press the button to start a new game", 50, 50);
+    this.ctx.font = "68px serif";
+    this.ctx.fillText("Score: " + score, 50, 150);
     this.ctx.fillStyle = "beige";
   }
 
   draw(canvasContext) {
     canvasContext.fillRect(0, 0, canvasContext.canvas.width, canvasContext.canvas.height);
-    canvasContext.drawImage(this.background, this.background_x,0, canvasContext.canvas.width*2, canvasContext.canvas.height);
+    canvasContext.drawImage(this.background, this.background_x, 0, canvasContext.canvas.width * 2, canvasContext.canvas.height);
     for (let i = 0; i < this.drawables.length; i++) {
       this.drawables[i].draw(canvasContext);
     }
@@ -195,11 +246,11 @@ console.log(drawable.x_pos);
     let hasCollided2 = false;
 
     for (let i = 0; i < this.drawables.length; i++) {
-      // convex points of player pentrate verticies of drawable
+      // convex points of player penetrate verticies of drawable
       let drawable = this.drawables[i];
       hasCollided1 = drawable.checkCollision(this.player);
       hasCollided2 = this.player.checkCollision(drawable);
-      if (!hasCollided1 && !hasCollided2){
+      if (!hasCollided1 && !hasCollided2) {
         continue;
       }
       let angle;
@@ -221,20 +272,16 @@ console.log(drawable.x_pos);
       if (hasCollided2 && !hasCollided1) {
         vertObject = this.player;
         pointObject = drawable;
-       // old_x += 2* x_offset;
-    //  old_y += 2* y_offset;
-       // x_offset *=-1;
-       // y_offset *= -1;
       }
 
       index = vertObject.getFirstCollisionPointIndex(pointObject);
       convexPoints = pointObject.convexPoints();
       collision = convexPoints[index];
       len = convexPoints.length;
-      let collVert1 = [convexPoints[cycle(index -1,len)], convexPoints[index]];
-      let collVert2 = [convexPoints[index], convexPoints[cycle(index+1,len)]];
-      let vec1 =leftTurn(verticeToVector(collVert1));
-      let vec2 =leftTurn( verticeToVector(collVert2));
+      let collVert1 = [convexPoints[cycle(index - 1, len)], convexPoints[index]];
+      let collVert2 = [convexPoints[index], convexPoints[cycle(index + 1, len)]];
+      let vec1 = leftTurn(verticeToVector(collVert1));
+      let vec2 = leftTurn(verticeToVector(collVert2));
       old_x = collision[0] - x_offset;
       old_y = collision[1] - y_offset;
       if (hasCollided2 && !hasCollided1) {
@@ -244,11 +291,11 @@ console.log(drawable.x_pos);
       firstVertice = vertObject.getRayCollision(old_x, old_y, x_offset, y_offset);
       angle = getCollisionVector(firstVertice, collision);
       if (hasCollided2 && !hasCollided1) {
-angle = angle.map((x) => -x);
+        angle = angle.map((x) => -x);
       }
       let firstNormVec = leftTurn(verticeToVector(firstVertice));
-      if (dotProduct(firstNormVec, vec1)<0 ||dotProduct(firstNormVec,vec2)<0){
-        if (vecLength(angle)>600){
+      if (dotProduct(firstNormVec, vec1) < 0 || dotProduct(firstNormVec, vec2) < 0) {
+        if (vecLength(angle) > 600) {
           console.log(angle);
         }
         this.player.collide(angle);
@@ -262,30 +309,53 @@ angle = angle.map((x) => -x);
 
 
 
-function drawClock(canvasContext, time) {
+function drawText(text, canvasContext, x, y) {
   canvasContext.font = "48px serif";
   canvasContext.fillStyle = "black";
-  canvasContext.fillText(time.toFixed(2), canvasContext.canvas.width / 2 - 50, 50);
+  canvasContext.fillText(text, x, y);
   canvasContext.fillStyle = "beige";
 }
 class Drawable {
+  constructor(canCollide) {
+    this.canCollide = canCollide;
+  }
   draw(canvasContext) {
     console.log("Drawing");
   }
 
   checkCollision(drawable) {
-    console.log("Collison check not implemented");
-    return false;
+    if (!this.canCollide || !drawable.canCollide) {
+      return false;
+    }
+    return true;
   }
 
   convex_points() {
     return new [[2000, 2000], [2001, 2001], [2000, 2001]]();
   }
 }
+class Text extends Drawable {
+  constructor(text, x_pos, y_pos, textSize) {
+    super(false);
+    this.x_pos = x_pos;
+    this.y_pos = y_pos;
+    this.textSize = textSize;
+    this.text = text;
+  }
+  draw(canvasContext) {
+    canvasContext.font = this.textSize + "px serif";
+    canvasContext.fillStyle = "black";
+    canvasContext.fillText(this.text, this.x_pos, this.y_pos);
+    canvasContext.fillStyle = "beige";
+  }
+
+
+}
+
 
 class Box extends Drawable {
   constructor(x_pos, y_pos, width, height) {
-    super();
+    super(true);
     this.x_pos = x_pos;
     this.y_pos = y_pos;
     this.width = width;
@@ -360,6 +430,9 @@ class Box extends Drawable {
   }
 
   checkCollision(drawable) {
+    if (!super.checkCollision(drawable)) {
+      return false;
+    }
     var collison = this.getFirstCollisionPointIndex(drawable);
     if (collison != null) {
       return true;
@@ -406,7 +479,7 @@ function getCollisionVector(points, collision) {
 
 class Player extends Box {
   constructor(x_pos, y_pos, width, height) {
-    super();
+    super(true);
     this.initial_x_pos = x_pos;
     this.initial_y_pos = y_pos;
     this.x_pos = x_pos;
@@ -417,18 +490,25 @@ class Player extends Box {
     this.y_speed = 0;
     this.x_speed = 0;
     this.images = null;
+	this.jumpImg = null;
     this.canJump = false;
+	this.lifes  = 3;
     this.i = 0;
   }
 
   draw(canvasContext) {
     if (this.canJump) {
       canvasContext.drawImage(this.images[Math.floor(this.i)], this.x_pos, this.y_pos, this.width, this.height);
-      this.i = (this.i + (this.x_speed / (60 * 50))) % (this.images.length);
+	  // assume that images show two steps -> 2 width of movement// assume for 60fps
+      this.i =(this.i + (this.x_speed *(1/60)*this.images.length/2)/(2*this.width))% (this.images.length);
 
       return;
     }
-    canvasContext.drawImage(this.images[0], this.x_pos, this.y_pos, this.width, this.height);
+	let jump = this.images[0];
+	if (this.jumpImg !=null){
+			let jump = this.jumpImg;
+	}
+    canvasContext.drawImage(jump, this.x_pos, this.y_pos, this.width, this.height);
   }
 
   update(dt, playerSpeedUp) {
@@ -436,16 +516,15 @@ class Player extends Box {
     this.y_speed = this.y_speed + grav * dt;
   }
 
-  reset_state() {
-    this.x_pos = this.initial_x_pos;
-    this.y_pos = this.initial_y_pos;
-    this.y_speed = 0;
-    this.x_speed = 0;
-  }
+
   jump() {
     if (this.canJump == false) {
       return;
+
     }
+
+    let e = new CustomEvent("jump", { time: this.playTime });
+    window.dispatchEvent(e);
     this.y_speed -= jump_speed;
     this.canJump = false;
   }
@@ -468,9 +547,6 @@ class Player extends Box {
     if (dot_product < 0) {
       let length_squared = angle.reduce((sum, x) => sum + x ** 2, 0);
       let projected = angle.map((x) => x * dot_product / length_squared);
-      if (vecLength(projected)>600){
-        console.log(projected);
-    }
       let new_speed = speed.map((x, i) => x - projected[i]);
       this.x_speed = new_speed[0];
       this.y_speed = new_speed[1];
@@ -481,27 +557,91 @@ class Player extends Box {
   }
 }
 
-function leftTurn(vector){
+function leftTurn(vector) {
   // return the 90° left turned vector for the display ax-system, e.g. y axis
   // goes down
-  return [vector[1],-vector[0]]
+  return [vector[1], -vector[0]]
 }
-function verticeToVector(vert){
-  return [vert[1][0]-vert[0][0],vert[1][1]-vert[0][1]];
+function verticeToVector(vert) {
+  return [vert[1][0] - vert[0][0], vert[1][1] - vert[0][1]];
 
 }
-function dotProduct(vec1,vec2){
-return vec1.reduce((sum, x, i) => sum + x * vec2[i], 0);
+function dotProduct(vec1, vec2) {
+  return vec1.reduce((sum, x, i) => sum + x * vec2[i], 0);
 
 }
-function cycle(i, len){
+function cycle(i, len) {
   let k = i % len;
-  while (k<0){
-    k +=len;
+  while (k < 0) {
+    k += len;
   }
   return k;
 
 }
-function vecLength(vec){
-  return Math.sqrt(vec.reduce((sum,x) => sum +x*x));
+function vecLength(vec) {
+  return Math.sqrt(vec.reduce((sum, x) => sum + x * x));
 }
+class Checkpoint {
+  constructor(gamestate) {
+    this.x_pos = gamestate.x_pos;
+    this.background_x = gamestate.background_x;
+    this.y_pos = gamestate.player.y_pos;
+    this.x_speed = gamestate.player.x_speed;
+    this.y_speed = gamestate.player.y_speed;
+    this.playTime = gamestate.playTime;
+    this.drawables = deepcopyDrawables(gamestate.drawables);
+    this.checkPoints = gamestate.checkPoints;
+  }
+}
+
+function deepcopyDrawables(drawables) {
+  let new_drawables = []
+  for (const drawable of drawables) {
+    if (drawable instanceof Box) {
+      let b = new Box(
+        drawable.x_pos,
+        drawable.y_pos,
+        drawable.width,
+        drawable.height,
+      )
+      b.images = drawable.images;
+      new_drawables.push(b);
+    }
+    if (drawable instanceof Text) {
+      let t = new Text(
+        drawable.text,
+        drawable.x_pos,
+        drawable.y_pos,
+        drawable.textSize
+      )
+      new_drawables.push(t);
+    }
+  }
+  return new_drawables;
+
+}
+
+
+function generatelevel(gamestate, playerImages,bgImage) {
+	gamestate.player.y_pos = 200;
+	gamestate.player.x_pos = 100;
+	gamestate.x_pos = 0 ;
+      gamestate.drawables = [];
+      if (svgDoc == null) {
+        gamestate.addDrawable(new Box(0, 750, 50000,150));
+        for (let i=1; i<50; i++){
+           gamestate.addDrawable(new Text("Jump", i*600,500, 40));
+
+        }
+        return;
+        }
+      let boxes = generateXmlLevel(svgDoc);
+      this,gamestate.checkPoints = [];
+      gamestate.addCheckpoint(0);
+      gamestate.addCheckpoint(3000);
+      gamestate.addCheckpoint(6000);
+      let offset = 0;
+      for (const box of boxes) {
+        gamestate.addDrawable(new Box(box.x-offset, box.y, box.width, box.height));
+      }
+    }
