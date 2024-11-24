@@ -4,6 +4,8 @@
 <head>
   <meta charset="utf-8"/>
   <title>Run, Santa, Run!</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
 
   <script type="text/javascript" src="{% static '3rdparty/qrcode/qrcode.min.js' %}"></script>
 
@@ -20,20 +22,18 @@
     <div>
       <span id="addr-span"></span>
       <button onclick="generateQR(window.location.origin);">🔀</button>
-          </div>
-    <a href={% url 'click' %}>Push the Button!</a>
-    <div>
-    </div>
-    <a href={% url 'watch' %}>Watch the Game!</a>
-    <div>
+      <div>
+        <a href="{% url 'click' %}" class="btn btn-primary">Push the Button!</a>
+        <a href="{% url 'watch' %}" class="btn btn-primary">Watch the Game!</a>
+      </div>
       <span id="num_jumping">0</span> / <span id="num_players">0</span> players are jumping
     </div>
   </div>
 
   <div id="qrcode" style="width:200px; height:200px; margin-top:15px;"></div>
 
-  
-  
+
+
   <div style="display:flex; justify-content:center; align-items:center; text-align:center; min-height:10vh; min-width:10vh;">
     <div id="santa" style="background:red; width:25px; height:25px;"></div>
   </div>
