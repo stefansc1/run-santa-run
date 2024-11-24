@@ -1,5 +1,7 @@
+from pathlib import Path
+
 from django.conf import settings
-from django.http import HttpResponse
+from django.http import HttpResponse, FileResponse
 from django.shortcuts import render
 
 from channels.generic.websocket import AsyncWebsocketConsumer
@@ -22,7 +24,7 @@ def lobby(request):
         ip = settings.IP
     return render(request, 'lobby.html', {'ip': ip, 'port': settings.PORT})
 
-def run(request):
+def watch(request):
     return render(request, "santa.html")
 
 
@@ -71,3 +73,11 @@ class Consumer(AsyncWebsocketConsumer):
 
     async def msg(self, message):
         await self.send(text_data=json.dumps(message["message"]))
+
+def serve_xml_level(request):
+    file_path = Path(settings.ROOT_DIR) / "santa/static/Level1.svg"
+    return FileResponse(open(file_path, 'rb'), content_type='application/xml')
+
+
+def single_play(request):
+    return render(request, "single_play.html")

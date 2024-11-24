@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Run, Santa, Run!</title>
+
+  <script type="text/javascript" src="{% static '3rdparty/qrcode/qrcode.min.js' %}"></script>
+
+  <style>
+    @keyframes jump {
+      0% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+      100% { transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <label for="avatar">Choose level as svg File:</label>
+    <input name="levelInput" type="file" id="fileInput" accept=".svg">
+
+    <canvas id="canvas"></canvas>
+  </div>
+      <div style="min-height:10vh; height:10vh; max-height:10vh;">
+    <button style="width:50%; height:100%;"
+      id="jumpButton"
+      onmousedown="jump()"
+      onmouseup="notJump()"
+      onmouseout="notJump()"
+    >
+      Jump
+    </button>
+    <button id="startButton" onclick="start()" style="width:45%; height:100%;">
+      Start
+    </button>
+  </div>
+      {% include "./load_game.html" %}
+</body>
+</html>

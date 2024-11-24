@@ -1,20 +1,61 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8"/>
-  <title>Run, Santa, Run!</title>
+    <meta charset="utf-8"/>
+    <title>Run, Santa, Run!</title>
 </head>
 <body>
 
+
+<canvas id="canvas"></canvas>
+</div>
+<div style="min-height:10vh; height:10vh; max-height:10vh;">
+    <button style="width:50%; height:100%;"
+            id="jumpButton"
+            onmousedown="jump()"
+            onmouseup="notJump()"
+            onmouseout="notJump()">
+        Jump
+    </button>
+    <button id="startButton" onclick="start()" style="width:45%; height:100%;">
+        Start
+    </button>
+</div>
+{% include "./load_game.html" %}
+
+<input name="levelInput" type="file" id="fileInput" accept=".svg">
+
 <script>
+    var is_jumping = false;
     const ws_scheme = (window.location.protocol == 'https:') ? 'wss' : 'ws';
-    const ws = new WebSocket(ws_scheme + '://' + window.location.host + '/ws/santa/');
-    ws.onclose = e => {
-        console.log("Error: socket closed unexpectedly", e);
-    };
+    const ws = new WebSocket(ws_scheme +'://' + window.location.host + '/ws/santa/');
+    ws.onclose = e => {console.log("Error: socket closed unexpectedly", e);};
     ws.onmessage = m => {
-      console.log(m);
+      //console.log(m);
+      let data = JSON.parse(m.data)
+      let jumping = data["jumping"];
+      let players = data["players"];
+        document.getElementById("num_jumping").textContent = jumping + "";
+        document.getElementById("num_players").textContent = players + "";
+        let should_jump = jumping >= players / 2;
+        if (should_jump) {
+            jump()
+        } else {
+            notJump()
+        }
+        if (should_jump && !is_jumping) {
+            document.getElementById("santa").animate([
+                {transform: "translateY(0)"},
+                {transform: "translateY(-16px)"},
+                {transform: "translateY(0)"},
+        ], {
+          duration: 256,
+          iterations: 1,
+        });
+      }
+      is_jumping = should_jump;
     };
-  </script>
+
+</script>
 </body>
 </html>

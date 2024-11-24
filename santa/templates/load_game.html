@@ -1,0 +1,59 @@
+{% load static %}
+    <audio id="music" src={% static "audio/run_santa_run_bg.mp3"%}></audio>
+    <audio id="countdown" src={% static "audio/start_sound_beep_3.mp3"%}></audio>
+    <audio id="jump" src={% static "audio/jump.mp3"%}></audio>
+
+  <script src={% static "js/app.js"%}></script>
+  <script src={% static "js/level_reader.js"%}></script>
+  <script src={% static "js/audio.js"%}></script>
+
+    <script>
+    let img_path = "{% static "images"%}"
+    const bgImage = new Image();
+    bgImage.src = img_path+ "/bg.png";
+    let images = [];
+    for (let i = 1; i < 4; i++) {
+      const img = new Image(); // Create new img element
+      img.src = img_path + "/img" + i + ".png"; // Set source path
+      images.push(img);
+    }
+
+
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    const windowInnerWidth = window.innerWidth;
+    const windowInnerHeight = window.innerHeight;
+
+    ctx.canvas.width = width;
+    ctx.canvas.height = height;
+
+	gamestate = new Gamestate();
+    let player = new Player(100, 200, 50, 80);
+	player.images = images;
+	gamestate.background = bgImage;
+	gamestate.addDrawable(player);
+    let lastRenderTime = 0;
+    ctx.fillStyle = "beige";
+    gamestate.ctx = ctx;
+    generatelevel(gamestate);
+
+    function main(currentTime) {
+      gamestate.set_dt((currentTime - lastRenderTime) / 1000);
+      lastRenderTime = currentTime;
+      gamestate.currentMode();
+      window.requestAnimationFrame(main);
+    }
+
+    function jump() {
+      gamestate.player.shouldJump = true;
+    }
+
+    function notJump() {
+      gamestate.player.shouldJump = false;
+    }
+
+    function start() {
+      gamestate.switchMode("play");
+    }
+    window.requestAnimationFrame(main);
+    </script>
