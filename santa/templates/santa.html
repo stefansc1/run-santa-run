@@ -9,20 +9,23 @@
 
 <canvas id="canvas"></canvas>
 </div>
-<div style="min-height:10vh; height:10vh; max-height:10vh;">
-    <button style="width:50%; height:100%;"
-            id="jumpButton"
-            onmousedown="jump()"
-            onmouseup="notJump()"
-            onmouseout="notJump()">
-        Jump
-    </button>
-    <button id="startButton" onclick="start()" style="width:45%; height:100%;">
-        Start
-    </button>
-</div>
+
 {% include "./load_game.html" %}
 
+<!-- Buttons after creating the js which buttons reference -->
+<div style="min-height:10vh; height:10vh; max-height:10vh;">
+  <button style="width:50%; height:100%;"
+          id="jumpButton"
+          onmousedown="jump()"
+          onmouseup="notJump()"
+          onmouseout="notJump()"
+  >
+    Jump
+  </button>
+  <button id="startButton" onclick="start()" style="width:45%; height:100%;">
+    Start
+  </button>
+</div>
 <input name="levelInput" type="file" id="fileInput" accept=".svg">
 
 <script>

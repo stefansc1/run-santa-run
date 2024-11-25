@@ -1,23 +1,29 @@
 {% load static %}
-    <audio id="music" src={% static "audio/run_santa_run_bg.mp3"%}></audio>
-    <audio id="countdown" src={% static "audio/start_sound_beep_3.mp3"%}></audio>
-    <audio id="jump" src={% static "audio/jump.mp3"%}></audio>
+<audio id="music" src={% static "audio/run_santa_run_bg.mp3"%}></audio>
+<audio id="countdown" src={% static "audio/start_sound_beep_3.mp3"%}></audio>
+<audio id="jump" src={% static "audio/jump.mp3"%}></audio>
+<audio id="win" src={% static "audio/win.mp3"%}></audio>
+<audio id="gameover" src={% static "audio/game_over.mp3"%}></audio>
 
-  <script src={% static "js/app.js"%}></script>
-  <script src={% static "js/level_reader.js"%}></script>
-  <script src={% static "js/audio.js"%}></script>
+<script src={% static "js/app.js"%}></script>
+<script src={% static "js/level_reader.js"%}></script>
+<script src={% static "js/audio.js"%}></script>
 
-    <script>
+<script>
     let img_path = "{% static "images"%}"
     const bgImage = new Image();
     bgImage.src = img_path+ "/bg.png";
     let images = [];
-    for (let i = 1; i < 4; i++) {
+    for (let i = 1; i < 5; i++) {
       const img = new Image(); // Create new img element
       img.src = img_path + "/img" + i + ".png"; // Set source path
       images.push(img);
     }
-
+    let jumpImg = new Image();
+    jumpImg.src = img_path + "/jump.png";
+    
+    let textureImg = new Image();
+    textureImg.src = img_path + "/texture.png"
 
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
@@ -30,7 +36,9 @@
 	gamestate = new Gamestate();
     let player = new Player(100, 200, 50, 80);
 	player.images = images;
+    player.jumpImg = jumpImg;
 	gamestate.background = bgImage;
+    gamestate.textureImg = textureImg;
 	gamestate.addDrawable(player);
     let lastRenderTime = 0;
     ctx.fillStyle = "beige";

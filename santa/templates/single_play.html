@@ -21,12 +21,15 @@
 
     <canvas id="canvas"></canvas>
   </div>
-      <div style="min-height:10vh; height:10vh; max-height:10vh;">
+
+      {% include "./load_game.html" %}
+  <!-- Buttons after creating the js which buttons reference -->
+  <div style="min-height:10vh; height:10vh; max-height:10vh;">
     <button style="width:50%; height:100%;"
-      id="jumpButton"
-      onmousedown="jump()"
-      onmouseup="notJump()"
-      onmouseout="notJump()"
+            id="jumpButton"
+            onmousedown="jump()"
+            onmouseup="notJump()"
+            onmouseout="notJump()"
     >
       Jump
     </button>
@@ -34,6 +37,5 @@
       Start
     </button>
   </div>
-      {% include "./load_game.html" %}
 </body>
 </html>

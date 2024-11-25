@@ -12,6 +12,14 @@ const jumpElement = document.getElementById("jump");
 var track3 = audioContext.createMediaElementSource(jumpElement);
 track3.connect(audioContext.destination);
 
+const gameOverElement = document.getElementById("gameover");
+var track4 = audioContext.createMediaElementSource(gameOverElement);
+track4.connect(audioContext.destination);
+
+const winElement = document.getElementById("win");
+var track5 = audioContext.createMediaElementSource(winElement);
+track5.connect(audioContext.destination);
+;
 musicElement.addEventListener(
   "ended",
   () => {
@@ -69,16 +77,12 @@ jumpElement.addEventListener(
   false,
 );
 
-addEventListener("SpeedUp",
-  (e) => {
-    let speed = e.detail;
-    musicElement.playbackRate = speed;
-  }
-);
 addEventListener("GameOver",
   () => {
     musicElement.playbackRate = 1;
     musicElement.pause();
+    gameOverElement.currentTime = 0;
+    gameOverElement.play()
   }
 );
 
@@ -89,4 +93,12 @@ addEventListener("Death",
   }
 );
 
+
+addEventListener("Win",
+    () => {
+        musicElement.pause();
+        winElement.currentTime= 0;
+        winElement.play();
+    }
+);
 

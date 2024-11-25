@@ -22,6 +22,7 @@ const playerSpeedUp = speed_up * PLAYER_SPEED;
 const startEvent = new Event("StartGame");
 const gameOverEvent = new Event("GameOver");
 const deathEvent = new Event("Death");
+const winEvent = new Event("Win");
 class Gamestate {
   constructor() {
     this.drawables = new Array();
@@ -39,6 +40,7 @@ class Gamestate {
     this.playerSpeedUp = 0;
     this.checkPoints = [];
     this.checkPoint = null;
+    this.textureImg = null;
   }
 
   addDrawable(drawable) {
@@ -140,7 +142,7 @@ class Gamestate {
     this.drawables = deepcopyDrawables(this.checkPoint.drawables);
   }
   move() {
-    this.background_x -= this.player.x_speed * this.dt / 10;
+    this.background_x -= this.player.x_speed * this.dt / 8;
     let outside = []
     let i = 0;
     this.x_pos = this.x_pos + PLAYER_SPEED * this.dt;
@@ -218,17 +220,20 @@ class Gamestate {
     let score = (this.playTime * 10).toFixed(0);
     this.draw(this.ctx);
     this.ctx.color = "beige";
-    this.ctx.font = "48px serif";
+    this.ctx.font = "40px serif";
     this.ctx.fillStyle = "black";
-    this.ctx.fillText("Game Over Press the button to start a new game", 50, 50);
+    this.ctx.fillText("You have failed. Now we have to wait for nuclear", 100, 100);
+    this.ctx.fillText("fusion to provide us with clean energy.", 100, 150);
+    this.ctx.fillText("Or ... You keep on trying!", 100, 200);
     this.ctx.font = "68px serif";
-    this.ctx.fillText("Score: " + score, 50, 150);
+    this.ctx.fillText("Score: " + score, 100, 350);
     this.ctx.fillStyle = "beige";
   }
 
   draw(canvasContext) {
     canvasContext.fillRect(0, 0, canvasContext.canvas.width, canvasContext.canvas.height);
-    canvasContext.drawImage(this.background, this.background_x, 0, canvasContext.canvas.width * 2, canvasContext.canvas.height);
+    let s = canvasContext.canvas.height / this.background.height
+    canvasContext.drawImage(this.background, this.background_x, 0, this.background.width*s, this.background.height*s);
     for (let i = 0; i < this.drawables.length; i++) {
       this.drawables[i].draw(canvasContext);
     }
@@ -480,8 +485,6 @@ function getCollisionVector(points, collision) {
 class Player extends Box {
   constructor(x_pos, y_pos, width, height) {
     super(true);
-    this.initial_x_pos = x_pos;
-    this.initial_y_pos = y_pos;
     this.x_pos = x_pos;
     this.y_pos = y_pos;
     this.width = width;
@@ -499,14 +502,14 @@ class Player extends Box {
   draw(canvasContext) {
     if (this.canJump) {
       canvasContext.drawImage(this.images[Math.floor(this.i)], this.x_pos, this.y_pos, this.width, this.height);
-	  // assume that images show two steps -> 2 width of movement// assume for 60fps
-      this.i =(this.i + (this.x_speed *(1/60)*this.images.length/2)/(2*this.width))% (this.images.length);
+	  // assume that images show two steps -> x width of movement// assume for 60fps
+      this.i =(this.i + (this.x_speed *(1/60)*this.images.length)/(1.5*this.width))% (this.images.length);
 
       return;
     }
-	let jump = this.images[0];
+	var jump = this.images[0];
 	if (this.jumpImg !=null){
-			let jump = this.jumpImg;
+			jump = this.jumpImg;
 	}
     canvasContext.drawImage(jump, this.x_pos, this.y_pos, this.width, this.height);
   }
@@ -622,26 +625,32 @@ function deepcopyDrawables(drawables) {
 }
 
 
-function generatelevel(gamestate, playerImages,bgImage) {
+function generatelevel(gamestate) {
 	gamestate.player.y_pos = 200;
 	gamestate.player.x_pos = 100;
 	gamestate.x_pos = 0 ;
       gamestate.drawables = [];
       if (svgDoc == null) {
-        gamestate.addDrawable(new Box(0, 750, 50000,150));
+        let new_box = new Box(0, 750, 50000,150)
+        new_box.images =[gamestate.textureImg];
+        gamestate.addDrawable(new_box);
         for (let i=1; i<50; i++){
            gamestate.addDrawable(new Text("Jump", i*600,500, 40));
-
         }
-        return;
+        gamestate.addDrawable(new Text("RLI-Claus needs your help to bring the many great decarbonisation", 200,100, 40));
+        gamestate.addDrawable(new Text("concepts that his little helpers have produced in his workshop ", 200,100+50, 40));
+        gamestate.addDrawable(new Text("in icy adlershof to the people.", 200,100+100, 40));
+        return
         }
       let boxes = generateXmlLevel(svgDoc);
-      this,gamestate.checkPoints = [];
+      this.gamestate.checkPoints = [];
       gamestate.addCheckpoint(0);
       gamestate.addCheckpoint(3000);
       gamestate.addCheckpoint(6000);
       let offset = 0;
       for (const box of boxes) {
-        gamestate.addDrawable(new Box(box.x-offset, box.y, box.width, box.height));
+        let new_box = new Box(box.x-offset, box.y, box.width, box.height);
+        new_box.images =[gamestate.textureImg];
+        gamestate.addDrawable(new_box);
       }
     }
