@@ -10,6 +10,53 @@
   <script type="text/javascript" src="{% static '3rdparty/qrcode/qrcode.min.js' %}"></script>
 
   <style>
+    .bgd {
+      width: 100vw;
+      height: 100vh;
+      background-color: black;
+      color: white;
+      user-select: none;
+      display: grid;
+      grid-template-areas:
+        'qr qr qr santa santa santa'
+        'text text text text text buttons';
+    }
+    .qr-div {
+      display: grid;
+      justify-content: center;
+      grid-area: qr;
+    }
+    .qr {
+      width: 500px;
+      height: 500px;
+      margin-top: 15px;
+    }
+    .santa-div {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      min-height: 10vh;
+      min-width: 10vh;
+      grid-area: santa;
+    }
+    .santa-preview {
+      background: red;
+      width: 25px;
+      height: 25px;
+    }
+    .counter {
+
+    }
+    .text {
+      grid-area: text;
+      font-size: xx-large;
+      padding-left: 5%;
+    }
+    .buttons {
+      grid-area: buttons;
+    }
     @keyframes jump {
       0% { transform: translateY(0); }
       50% { transform: translateY(-10px); }
@@ -18,29 +65,66 @@
   </style>
 </head>
 <body>
-  <div style="display:flex; justify-content:space-between">
-    <div>
-      <span id="addr-span"></span>
-      <button onclick="generateQR(window.location.origin);">🔀</button>
+  <div class="bgd">
+    <div class="qr-div">
+      <div id="qrcode" class="qr"></div>
       <div>
-        <a href="{% url 'click' %}" class="btn btn-primary">Push the Button!</a>
-        <a href="{% url 'watch' %}" class="btn btn-primary">Watch the Game!</a>
+        <span id="addr-span" onclick="generateQR(window.location.origin + '/click/');"></span>
       </div>
-      <span id="num_jumping">0</span> / <span id="num_players">0</span> players are jumping
+    </div>
+    <div class="santa-div">
+      <!--<div id="santa" class="santa-preview"></div>-->
+      <img id="santa" src="{% static 'images/santa_head.png' %}">
+      <div class="counter">
+        <span id="num_jumping">0</span> / <span id="num_players">0</span> players are jumping
+      </div>
+    </div>
+    <div class="text">
+      <span>RLI-Claus needs your help to bring the many great decarbonisation concepts that his little helpers have produced in his workshop in icy Adlershof to the people.</span><br><br><span>Made by: Moritz, Paul S., Raoul, Stefan</span>
+    </div>
+    <div class="buttons">
+      <a href="{% url 'click' %}" class="btn btn-primary">Push the Button!</a>
+      <a href="{% url 'watch' %}" class="btn btn-primary">Watch the Game!</a>
     </div>
   </div>
 
-  <div id="qrcode" style="width:200px; height:200px; margin-top:15px;"></div>
-
-
-
-  <div style="display:flex; justify-content:center; align-items:center; text-align:center; min-height:10vh; min-width:10vh;">
-    <div id="santa" style="background:red; width:25px; height:25px;"></div>
-  </div>
-
-
-
   <script>
+    var should_jump = false;
+    var is_jumping = false;
+    const ws_scheme = (window.location.protocol == 'https:') ? 'wss' : 'ws';
+    const ws = new WebSocket(ws_scheme +'://' + window.location.host + '/ws/santa/');
+    ws.onclose = e => {console.log("Error: socket closed unexpectedly", e);};
+    ws.onmessage = m => {
+      //console.log(m);
+      let data = JSON.parse(m.data)
+      let jumping = data["jumping"];
+      let players = data["players"];
+        document.getElementById("num_jumping").textContent = jumping + "";
+        document.getElementById("num_players").textContent = players + "";
+        should_jump = jumping >= players / 2 && players > 0;
+        if (should_jump)
+          jump();
+    };
+
+    function jump() {
+      const duration = 1000;  // ms
+      if (should_jump && !is_jumping) {
+        is_jumping = true;
+        document.getElementById("santa").animate([
+          {transform: "translateY(0)"},
+          {transform: "translateY(-100px)"},
+          {transform: "translateY(0)"},
+        ], {
+          duration: duration,
+          iterations: 1,
+        });
+        // after animation finishes, call jump again
+        setTimeout(_ => {
+          is_jumping = false;
+          jump();
+        }, duration);
+      }
+    }
 
     var qrcode = null;
     function generateQR(addr) {
@@ -49,13 +133,13 @@
       else
         qrcode = new QRCode(document.getElementById("qrcode"), {
           text: addr,
-          width : 200,
-          height : 200,
+          width : 500,
+          height : 500,
         });
       document.getElementById("addr-span").textContent = addr;
     }
 
-    let addr = "{{ ip }}:{{ port }}";
+    let addr = "{{ ip }}:{{ port }}/click/";
     if (!addr.startsWith("http"))
       addr = "http://" + addr;
     generateQR(addr);
