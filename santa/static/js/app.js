@@ -41,6 +41,10 @@ class Gamestate {
     this.checkPoints = [];
     this.checkPoint = null;
     this.textureImg = null;
+    this.victory = null;
+    this.victoryScreenImg = null;
+    this.gameoverScreenImg = null;
+    this.startScreenImg = null;
   }
 
   addDrawable(drawable) {
@@ -52,9 +56,8 @@ class Gamestate {
     }
   }
 
-  generate_startscreen_level() {
-    let drawables = [];
-    drawables.push(new Box(0, 200, 1000, 20));
+  addVictory(x){
+    this.victory = x;
   }
   drawCountdown() {
     this.draw(this.ctx);
@@ -81,7 +84,8 @@ class Gamestate {
         this.player.x_speed = 150;
         this.player.y_speed = 0;
         this.currentMode = this.play;
-        this.drawables = generate_startscreen_level();
+      //  this.drawables = generate_startscreen_level();
+
         this.drawText = (_, __) => void 0;
         this.drawables.push;
         this.playerSpeedUp = 0;
@@ -110,11 +114,11 @@ class Gamestate {
         break;
       case "gameover":
         window.dispatchEvent(gameOverEvent);
-		this.player.lifes = 3;
-		this.checkPoint = null;
-        this.currentMode = this.gameover;
-		this.x_pos = 0;
-        this.background_x = 0;
+        this.currentMode = this.gameovermode;
+        break;
+      case "victory":
+        window.dispatchEvent(winEvent);
+        this.currentMode = this.victorymode;
         break;
       default:
         assert(False);
@@ -136,6 +140,7 @@ class Gamestate {
     this.player.y_pos = this.checkPoint.y_pos;
     this.playTime = this.checkPoint.playTime;
     this.background_x = this.checkPoint.background_x;
+    this.player.x_pos = this.checkPoint.player_x_pos;
     this.player.y_speed = this.checkPoint.y_speed;
     this.player.x_speed = this.checkPoint.x_speed;
     this.checkPoints = this.checkPoint.checkPoints;
@@ -145,7 +150,9 @@ class Gamestate {
     this.background_x -= this.player.x_speed * this.dt / 8;
     let outside = []
     let i = 0;
-    this.x_pos = this.x_pos + PLAYER_SPEED * this.dt;
+    if (this.player.x_speed>1) {
+      this.x_pos = this.x_pos + PLAYER_SPEED * this.dt;
+    }
     for (const drawable of this.drawables) {
       drawable.x_pos -= this.player.x_speed * this.dt;
       if (drawable.x_pos + drawable.width < -100) {
@@ -204,6 +211,9 @@ class Gamestate {
       this.checkPoint = this.createCheckpoint();
       this.checkPoints.splice(0, 1);
     }
+    if (this.victory !=null && this.victory < this.x_pos){
+      this.switchMode("victory")
+    }
     this.player.canJump = false;
     // If player collides he can jump again
     this.checkCollision();
@@ -215,17 +225,38 @@ class Gamestate {
     // better keep it at the end in case something throws in this callback,
     // we don't want it to throw every painting frames indefinitely
   }
+  victorymode(){
 
-  gameover() {
+    let x_mid = this.ctx.canvas.width/2;
+    let y_mid = this.ctx.canvas.height/2;
+    let w = this.victoryScreenImg.width;
+    let h = this.victoryScreenImg.height;
+    let victoryBox = new Box( x_mid-w/2,y_mid-h/2,w,h)
+    victoryBox.images = [this.victoryScreenImg]
+    this.player.x_speed = 0;
+    this.addDrawable(victoryBox);
+    this.draw(this.ctx);
+
+  }
+  gameovermode() {
+
+    this.x_pos = 0;
+    this.background_x = 0;
+    this.player.lifes = 3;
+    this.checkPoint = null;
     let score = (this.playTime * 10).toFixed(0);
     this.draw(this.ctx);
-    this.ctx.color = "beige";
-    this.ctx.font = "40px serif";
-    this.ctx.fillStyle = "black";
-    this.ctx.fillText("You have failed. Now we have to wait for nuclear", 100, 100);
-    this.ctx.fillText("fusion to provide us with clean energy.", 100, 150);
-    this.ctx.fillText("Or ... You keep on trying!", 100, 200);
-    this.ctx.font = "68px serif";
+    {
+      let x_mid = gamestate.ctx.canvas.width / 2;
+      let y_mid = gamestate.ctx.canvas.height / 2;
+      let w = gamestate.victoryScreenImg.width;
+      let h = gamestate.victoryScreenImg.height;
+      let victoryBox = new Box(x_mid - w / 2, y_mid - h / 2, w, h)
+      victoryBox.images = [gamestate.gameoverScreenImg]
+      gamestate.player.x_speed = 0;
+      gamestate.addDrawable(victoryBox);
+    }
+
     this.ctx.fillText("Score: " + score, 100, 350);
     this.ctx.fillStyle = "beige";
   }
@@ -587,6 +618,7 @@ function vecLength(vec) {
 class Checkpoint {
   constructor(gamestate) {
     this.x_pos = gamestate.x_pos;
+    this.player_x_pos = gamestate.player.x_pos;
     this.background_x = gamestate.background_x;
     this.y_pos = gamestate.player.y_pos;
     this.x_speed = gamestate.player.x_speed;
@@ -608,6 +640,7 @@ function deepcopyDrawables(drawables) {
         drawable.height,
       )
       b.images = drawable.images;
+      b.canCollide = drawable.canCollide;
       new_drawables.push(b);
     }
     if (drawable instanceof Text) {
@@ -637,9 +670,17 @@ function generatelevel(gamestate) {
         for (let i=1; i<50; i++){
            gamestate.addDrawable(new Text("Jump", i*600,500, 40));
         }
-        gamestate.addDrawable(new Text("RLI-Claus needs your help to bring the many great decarbonisation", 200,100, 40));
-        gamestate.addDrawable(new Text("concepts that his little helpers have produced in his workshop ", 200,100+50, 40));
-        gamestate.addDrawable(new Text("in icy adlershof to the people.", 200,100+100, 40));
+        {
+          let x_mid = gamestate.ctx.canvas.width / 2;
+          let y_mid = gamestate.ctx.canvas.height / 2;
+          let w = gamestate.victoryScreenImg.width;
+          let h = gamestate.victoryScreenImg.height;
+          let victoryBox = new Box(x_mid - w / 2, y_mid - h / 2, w, h)
+          victoryBox.images = [gamestate.startScreenImg]
+          gamestate.player.x_speed = 0;
+          gamestate.addDrawable(victoryBox);
+        }
+
         return
         }
       let boxes = generateXmlLevel(svgDoc);
@@ -647,6 +688,13 @@ function generatelevel(gamestate) {
       gamestate.addCheckpoint(0);
       gamestate.addCheckpoint(3000);
       gamestate.addCheckpoint(6000);
+      gamestate.addCheckpoint(8750);
+      let victory = new Box(10800, 440, 200, 200);
+      gamestate.addVictory(10800);
+      victory.images = [victoryImg];
+      victory.canCollide = false;
+      gamestate.addDrawable(victory)
+
       let offset = 0;
       for (const box of boxes) {
         let new_box = new Box(box.x-offset, box.y, box.width, box.height);

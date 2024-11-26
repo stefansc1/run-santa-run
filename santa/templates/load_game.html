@@ -25,6 +25,16 @@
     let textureImg = new Image();
     textureImg.src = img_path + "/texture.png"
 
+    let victoryImg = new Image();
+    victoryImg.src = img_path + "/victory.PNG"
+
+    let gameoverScreenImg = new Image();
+    gameoverScreenImg.src = img_path + "/gameoverScreenImg.png"
+    let victoryScreenImg = new Image();
+    victoryScreenImg.src = img_path + "/victoryScreenImg.png"
+    let startScreenImg = new Image();
+    startScreenImg.src = img_path + "/startScreenImg.png"
+    
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
     const windowInnerWidth = window.innerWidth;
@@ -39,6 +49,9 @@
     player.jumpImg = jumpImg;
 	gamestate.background = bgImage;
     gamestate.textureImg = textureImg;
+    gamestate.victoryScreenImg = victoryScreenImg;
+    gamestate.startScreenImg = startScreenImg;
+    gamestate.gameoverScreenImg = gameoverScreenImg;
 	gamestate.addDrawable(player);
     let lastRenderTime = 0;
     ctx.fillStyle = "beige";
