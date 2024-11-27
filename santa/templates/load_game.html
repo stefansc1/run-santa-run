@@ -34,7 +34,7 @@
     victoryScreenImg.src = img_path + "/victoryScreenImg.png"
     let startScreenImg = new Image();
     startScreenImg.src = img_path + "/startScreenImg.png"
-    
+
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
     const windowInnerWidth = window.innerWidth;
@@ -76,7 +76,10 @@
     function start() {
       gamestate.switchMode("play");
     }
-    window.requestAnimationFrame(main);
+    startScreenImg.onload = function(){
+
+        requestAnimationFrame(main);
+    }
     </script>
         <div>
       <span id="num_jumping">0</span> / <span id="num_players">0</span> players are jumping

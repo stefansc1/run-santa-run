@@ -246,16 +246,16 @@ class Gamestate {
     this.checkPoint = null;
     let score = (this.playTime * 10).toFixed(0);
     this.draw(this.ctx);
-    {
-      let x_mid = gamestate.ctx.canvas.width / 2;
-      let y_mid = gamestate.ctx.canvas.height / 2;
-      let w = gamestate.victoryScreenImg.width;
-      let h = gamestate.victoryScreenImg.height;
-      let victoryBox = new Box(x_mid - w / 2, y_mid - h / 2, w, h)
-      victoryBox.images = [gamestate.gameoverScreenImg]
-      gamestate.player.x_speed = 0;
-      gamestate.addDrawable(victoryBox);
-    }
+
+    let x_mid = gamestate.ctx.canvas.width / 2;
+    let y_mid = gamestate.ctx.canvas.height / 2;
+    let w = gamestate.victoryScreenImg.width;
+    let h = gamestate.newScreenImg.height;
+    let newBox = new Box(x_mid - w / 2, y_mid - h / 2, w, h)
+    newBox.images = [gamestate.gameoverScreenImg]
+    gamestate.player.x_speed = 0;
+    gamestate.addDrawable(newBox);
+
 
     this.ctx.fillText("Score: " + score, 100, 350);
     this.ctx.fillStyle = "beige";
@@ -670,16 +670,22 @@ function generatelevel(gamestate) {
         for (let i=1; i<50; i++){
            gamestate.addDrawable(new Text("Jump", i*600,500, 40));
         }
-        {
-          let x_mid = gamestate.ctx.canvas.width / 2;
-          let y_mid = gamestate.ctx.canvas.height / 2;
-          let w = gamestate.victoryScreenImg.width;
-          let h = gamestate.victoryScreenImg.height;
-          let victoryBox = new Box(x_mid - w / 2, y_mid - h / 2, w, h)
-          victoryBox.images = [gamestate.startScreenImg]
+
+        let startBox = new Box(100,100,100,100)
+          startBox.images = [gamestate.startScreenImg]
+          startBox.canCollide = false;
           gamestate.player.x_speed = 0;
-          gamestate.addDrawable(victoryBox);
-        }
+          gamestate.addDrawable(startBox);
+          gamestate.draw(gamestate.ctx)
+
+         let x_mid = gamestate.ctx.canvas.width / 2;
+        let y_mid = gamestate.ctx.canvas.height / 2;
+        let w = gamestate.startScreenImg.width;
+        let h = gamestate.startScreenImg.height;
+        startBox.x_pos = x_mid - w / 2;
+        startBox.y_pos = y_mid - h / 2;
+        startBox.width = w;
+        startBox.height = h;
 
         return
         }
@@ -689,7 +695,7 @@ function generatelevel(gamestate) {
       gamestate.addCheckpoint(3000);
       gamestate.addCheckpoint(6000);
       gamestate.addCheckpoint(8750);
-      let victory = new Box(10800, 440, 200, 200);
+      let victory = new Box(10800, 440-250, 200, 250);
       gamestate.addVictory(10800);
       victory.images = [victoryImg];
       victory.canCollide = false;
