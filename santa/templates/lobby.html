@@ -86,9 +86,12 @@
     <div class="buttons">
       <a href="{% url 'click' %}" class="btn btn-primary">Push the Button!</a>
       <a href="{% url 'watch' %}" class="btn btn-primary">Watch the Game!</a>
+      <a href="{% url 'single_play' %}" class="btn btn-primary">Play Solo!</a>
     </div>
   </div>
+
   <audio id="lobby-join-audio" src={% static "audio/bell.mp3"%}></audio>
+  <audio id="lobby-background-audio" src={% static "audio/lobby_background.mp3"%}></audio>
 
   <script>
     var should_jump = false;
@@ -164,6 +167,19 @@
         lobbyJoinElement.play();
       }
     )
+
+    const audioContext2 = new AudioContext();
+    const lobbyBackgroundElement = document.getElementById("lobby-background-audio");
+    audioContext2.createMediaElementSource(lobbyBackgroundElement).connect(audioContext2.destination);
+
+    {# auto play is not allowed. First the user has to interact with the site.#}
+    document.addEventListener("click", function() {
+    lobbyBackgroundElement.play();
+      lobbyBackgroundElement.volume = 1;
+        lobbyBackgroundElement.loop = true
+       })
+    
+
   </script>
 </body>
 </html>
