@@ -242,6 +242,7 @@ class Gamestate {
 
     this.x_pos = 0;
     this.background_x = 0;
+    this.player.x_speed = PLAYER_SPEED;
     this.player.lifes = 3;
     this.checkPoint = null;
     let score = (this.playTime * 10).toFixed(0);
@@ -249,8 +250,8 @@ class Gamestate {
 
     let x_mid = gamestate.ctx.canvas.width / 2;
     let y_mid = gamestate.ctx.canvas.height / 2;
-    let w = gamestate.victoryScreenImg.width;
-    let h = gamestate.newScreenImg.height;
+    let w = gamestate.gameoverScreenImg.width;
+    let h = gamestate.gameoverScreenImg.height;
     let newBox = new Box(x_mid - w / 2, y_mid - h / 2, w, h)
     newBox.images = [gamestate.gameoverScreenImg]
     gamestate.player.x_speed = 0;
